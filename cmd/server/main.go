@@ -20,7 +20,7 @@ func main() {
 	// ========== TEST REGISTER ==========
 	registerReq := dto.UserRegisterRequest{
 		Name:     "chit",
-		Email:    "chit@example.com",
+		Email:    "chit1@example.com",
 		Password: "123456",
 	}
 
@@ -35,7 +35,7 @@ func main() {
 
 	// ========== TEST LOGIN ==========
 	loginReq := dto.UserLoginRequest{
-		Email:    "chit@example.com",
+		Email:    "chit1@example.com",
 		Password: "123456",
 	}
 
