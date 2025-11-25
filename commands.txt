@@ -1,0 +1,15 @@
+Commands for intializing:
+********************************************************************************
+Creating migration up and down files:
+  migrate create -ext sql -dir db/migration -seq user_schema
+
+Intializing sqlc files:
+  sqlc init
+********************************************************************************
+
+Packages to Install:
+fiber:
+  go get github.com/gofiber/fiber/v2
+
+pgx:
+  go get github.com/jackc/pgx/v5
