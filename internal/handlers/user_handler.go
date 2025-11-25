@@ -13,7 +13,7 @@ type UserHandler struct {
 	srv services.AuthService
 }
 
-func NewUserHandler(app *fiber.App, db *db.Auth) {
+func NewUserHandler(app *fiber.App, db db.Auth) {
 	userHandler := &UserHandler{
 		app: app,
 		srv: services.NewAuthenticator(db),

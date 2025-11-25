@@ -12,16 +12,16 @@ drop-auth-container:
 psql-shell:
 	docker exec -it auth-package psql
 
-createdb:
+create-db:
 	docker exec -it auth-package createdb --username=root --owner=root authentication
 
-migrateup:
+migrate-up:
 	migrate -path internal/db/migration -database "$(DB_URL)" -verbose up
 
-migratedown:
+migrate-down:
 	migrate -path internal/db/migration -database "$(DB_URL)" -verbose down
 
-migratefresh: migratedown migrateup
+migrate-fresh: migratedown migrateup
 	@echo "Fresh migration complete"
 # ********************************************************************************
 
@@ -31,11 +31,17 @@ sqlc:
 	sqlc generate
 # ********************************************************************************
 
-dbtest:
+db-test:
 	go test -v -cover -count=1 ./internal/db/tests
+
+serivce-test:
+	go test -v -cover -count=1 ./internal/services/tests
 
 # running server  HACK: Remove it after production
 server:
 	fuser -k 8000/tcp 2>/dev/null || true && go run ./cmd/server/main.go
+
+mock:
+	mockgen -source=./internal/db/auth.go -destination=./internal/db/mock/auth.go -package=mock Auth
 
 .PHONY: create-auth-container drop-auth-container psql-shell migrateup migratedown

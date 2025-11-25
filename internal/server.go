@@ -17,10 +17,10 @@ type Server struct {
 func NewAuthServer(app *fiber.App, dbObj *pgxpool.Pool) (*Server, error) {
 	server := &Server{
 		app:  app,
-		auth: *db.NewAuth(dbObj),
+		auth: db.NewAuth(dbObj),
 	}
 
 	// init user handler
-	handlers.NewUserHandler(app, &server.auth)
+	handlers.NewUserHandler(app, server.auth)
 	return server, nil
 }

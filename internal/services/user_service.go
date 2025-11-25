@@ -19,10 +19,10 @@ type AuthService interface {
 }
 
 type Authenticator struct {
-	auth *db.Auth
+	auth db.Auth
 }
 
-func NewAuthenticator(auth *db.Auth) AuthService {
+func NewAuthenticator(auth db.Auth) AuthService {
 	return &Authenticator{
 		auth: auth,
 	}

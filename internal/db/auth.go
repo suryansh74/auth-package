@@ -5,13 +5,17 @@ import (
 	"github.com/suryansh74/auth-package/internal/db/sqlc"
 )
 
-type Auth struct {
+type Auth interface {
+	sqlc.Querier
+}
+
+type AuthPsql struct {
 	*sqlc.Queries
 	connPool *pgxpool.Pool
 }
 
-func NewAuth(db *pgxpool.Pool) *Auth {
-	return &Auth{
+func NewAuth(db *pgxpool.Pool) Auth {
+	return &AuthPsql{
 		Queries:  sqlc.New(db),
 		connPool: db,
 	}
