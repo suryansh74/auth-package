@@ -34,4 +34,8 @@ sqlc:
 dbtest:
 	go test -v -cover -count=1 ./internal/db/tests
 
+# running server  HACK: Remove it after production
+server:
+	fuser -k 8000/tcp 2>/dev/null || true && go run ./cmd/server/main.go
+
 .PHONY: create-auth-container drop-auth-container psql-shell migrateup migratedown

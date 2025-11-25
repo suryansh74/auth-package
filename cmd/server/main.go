@@ -1,52 +1,39 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
 
-	"github.com/suryansh74/auth-package/internal/db"
-	"github.com/suryansh74/auth-package/internal/dto"
-	"github.com/suryansh74/auth-package/internal/services"
+	"github.com/gofiber/fiber/v2"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/suryansh74/auth-package/internal"
+)
+
+const (
+	// Database connection string
+	connString = "postgresql://root:secret@192.168.29.20:5432/authentication?sslmode=disable"
 )
 
 func main() {
-	// 1. Init DB
-	authDB := db.NewAuth()
-	defer authDB.Close()
-
-	// 2. Init Authenticator service
-	authService := services.NewAuthenticator(authDB)
-
-	// ========== TEST REGISTER ==========
-	registerReq := dto.UserRegisterRequest{
-		Name:     "chit",
-		Email:    "chit1@example.com",
-		Password: "123456",
-	}
-
-	fmt.Println("➡️ Calling Register...")
-
-	registerRes, err := authService.Register(registerReq)
+	app := fiber.New()
+	// Create connection pool
+	connPool, err := pgxpool.New(context.Background(), connString)
 	if err != nil {
-		log.Println("❌ Register Error:", err)
-	} else {
-		fmt.Println("✅ Register Response:", registerRes)
+		log.Fatalf("Unable to create connection pool: %v\n", err)
 	}
 
-	// ========== TEST LOGIN ==========
-	loginReq := dto.UserLoginRequest{
-		Email:    "chit1@example.com",
-		Password: "123456",
+	// Close closes the database connection pool
+	defer connPool.Close()
+
+	// Verify connection
+	if err := connPool.Ping(context.Background()); err != nil {
+		log.Fatalf("Unable to ping database: %v\n", err)
 	}
 
-	fmt.Println("➡️ Calling Login...")
+	// for package it only server should start it should have config and database object
+	// config will have secret key for paseto, address and port
+	// and database object of pgx ONLY for now
+	internal.NewAuthServer(app, connPool)
 
-	loginRes, err := authService.Login(loginReq)
-	if err != nil {
-		log.Println("❌ Login Error:", err)
-	} else {
-		fmt.Println("✅ Login Response:", loginRes)
-	}
-
-	fmt.Println("🎉 Done!")
+	app.Listen("localhost:8000")
 }
