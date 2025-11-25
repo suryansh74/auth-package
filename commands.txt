@@ -13,3 +13,6 @@ fiber:
 
 pgx:
   go get github.com/jackc/pgx/v5
+
+testify:
+  go get github.com/stretchr/testify
