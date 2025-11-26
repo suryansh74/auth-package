@@ -39,7 +39,7 @@ service-test:
 
 # running server  HACK: Remove it after production
 server:
-	fuser -k 8000/tcp 2>/dev/null || true && go run ./cmd/server/main.go
+	fuser -k 8000/tcp 2>/dev/null || true && go run ./examples/server/main.go
 
 mock:
 	mockgen -source=./internal/db/auth.go -destination=./internal/db/mock/auth.go -package=mock Auth

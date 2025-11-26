@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
-	customError "github.com/suryansh74/auth-package/internal/appError"
+	"github.com/jackc/pgx/v5/pgtype"
+	customError "github.com/suryansh74/auth-package/internal/apperrors"
 	"github.com/suryansh74/auth-package/internal/db"
 	"github.com/suryansh74/auth-package/internal/db/sqlc"
 	"github.com/suryansh74/auth-package/internal/dto"
@@ -16,6 +17,7 @@ type AuthService interface {
 	// TODO: add token in return along with response
 	Register(dto.UserRegisterRequest) (*dto.UserRegisterResponse, error)
 	Login(dto.UserLoginRequest) (*dto.UserLoginResponse, error)
+	GetUserByID(ctx context.Context, userID pgtype.UUID) (*sqlc.User, error)
 }
 
 type Authenticator struct {
@@ -96,4 +98,12 @@ func (a *Authenticator) userExists(email string) (bool, *sqlc.User, error) {
 		return false, nil, customError.UnExpectedError
 	}
 	return true, &user, nil
+}
+
+func (a *Authenticator) GetUserByID(ctx context.Context, userID pgtype.UUID) (*sqlc.User, error) {
+	user, err := a.auth.GetUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

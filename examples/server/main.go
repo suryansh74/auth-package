@@ -6,12 +6,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/suryansh74/auth-package/internal"
-	"github.com/suryansh74/auth-package/internal/utils"
+	"github.com/suryansh74/auth-package"
 )
 
 func main() {
-	config, err := utils.LoadConfig(".")
+	config, err := auth.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
@@ -34,7 +33,30 @@ func main() {
 	// for package it only server should start it should have config and database object
 	// config will have secret key for paseto, address and port
 	// and database object of pgx ONLY for now
-	internal.NewAuthServer(app, connPool, config)
+	server, err := auth.NewAuthServer(app, connPool, config)
+	if err != nil {
+		log.Println("failed to make server")
+	}
+
+	// Setup auth routes
+	server.SetupRoutes()
+
+	// Public routes
+	app.Get("/hi", sayHello)
+
+	// Create protected group for all your authenticated routes
+	protected := server.ProtectedGroup("/api") // ✅ All routes under /api require auth
+	protected.Get("/users", sayHello)
+
+	app.Get("/hii", sayHello)
+
+	app.Get("/hiii", server.AuthMiddleware(), sayHello)
 
 	app.Listen(config.ServerAddress)
+}
+
+func sayHello(ctx *fiber.Ctx) error {
+	return ctx.Status(fiber.StatusOK).JSON(&fiber.Map{
+		"message": "Hello",
+	})
 }

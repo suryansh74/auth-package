@@ -1,0 +1,5 @@
+Makefile
+commands.txt
+sqlc.yaml
+
+auth.env

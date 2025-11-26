@@ -1,14 +1,14 @@
 package middleware
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/suryansh74/auth-package/internal/token"
+	"github.com/suryansh74/auth-package/token"
 )
 
 const (
-	authorizationHeaderKey  = "authorization"
-	authorizationTypeBearer = "bearer"
-	authorizationPayloadKey = "authorization_payload"
+	AuthorizationPayloadKey = "authorization_payload"
 )
 
 func AuthMiddleware(maker token.Maker) fiber.Handler {
@@ -48,8 +48,23 @@ func AuthMiddleware(maker token.Maker) fiber.Handler {
 		}
 
 		// Save payload for further handlers
-		c.Locals(authorizationPayloadKey, payload)
+		c.Locals(AuthorizationPayloadKey, payload)
 
 		return c.Next()
 	}
+}
+
+// GetAuthPayload retrieves the authenticated user's payload from context
+func GetAuthPayload(c *fiber.Ctx) (*token.Payload, error) {
+	value := c.Locals(AuthorizationPayloadKey)
+	if value == nil {
+		return nil, errors.New("authorization payload not found")
+	}
+
+	payload, ok := value.(*token.Payload)
+	if !ok {
+		return nil, errors.New("invalid payload type")
+	}
+
+	return payload, nil
 }

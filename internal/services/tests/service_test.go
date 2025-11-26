@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 
-	customError "github.com/suryansh74/auth-package/internal/appError"
+	customError "github.com/suryansh74/auth-package/internal/apperrors"
 	"github.com/suryansh74/auth-package/internal/db/mock"
 	"github.com/suryansh74/auth-package/internal/db/sqlc"
 	"github.com/suryansh74/auth-package/internal/dto"

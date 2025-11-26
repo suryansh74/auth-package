@@ -8,10 +8,16 @@ import (
 	"github.com/suryansh74/auth-package/internal/dto"
 	"github.com/suryansh74/auth-package/internal/middleware"
 	"github.com/suryansh74/auth-package/internal/services"
-	"github.com/suryansh74/auth-package/internal/token"
+	"github.com/suryansh74/auth-package/token"
 )
 
-type UserHandler struct {
+type UserHandler interface {
+	Register(ctx *fiber.Ctx) error
+	Login(ctx *fiber.Ctx) error
+	CheckAuthUser(ctx *fiber.Ctx) error
+}
+
+type userHandler struct {
 	app *fiber.App
 	// injecting service in handler
 	srv                 services.AuthService
@@ -19,36 +25,16 @@ type UserHandler struct {
 	accessTokenDuration time.Duration
 }
 
-func NewUserHandler(app *fiber.App, db db.Auth, tokenMaker token.Maker, accessTokenDuration time.Duration) {
-	userHandler := &UserHandler{
+func NewUserHandler(app *fiber.App, db db.Auth, tokenMaker token.Maker, accessTokenDuration time.Duration) UserHandler {
+	return &userHandler{
 		app:                 app,
 		srv:                 services.NewAuthenticator(db),
 		tokenMaker:          tokenMaker,
 		accessTokenDuration: accessTokenDuration,
 	}
-
-	userHandler.SetupRoutes()
 }
 
-func (uh *UserHandler) SetupRoutes() {
-	// public routes
-	public := uh.app.Group("/")
-	public.Get("/check", uh.CheckHealth)
-	public.Post("/register", uh.Register)
-	public.Post("/login", uh.Login)
-
-	// private routes
-	private := uh.app.Group("/", middleware.AuthMiddleware(uh.tokenMaker))
-	private.Get("/dashboard", uh.UserDashboard)
-}
-
-func (uh *UserHandler) CheckHealth(ctx *fiber.Ctx) error {
-	return ctx.Status(fiber.StatusOK).JSON(&fiber.Map{
-		"messgae": "working fine",
-	})
-}
-
-func (uh *UserHandler) Register(ctx *fiber.Ctx) error {
+func (uh *userHandler) Register(ctx *fiber.Ctx) error {
 	// get incoming req
 	var req dto.UserRegisterRequest
 	err := ctx.BodyParser(&req)
@@ -76,7 +62,7 @@ func (uh *UserHandler) Register(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(&res)
 }
 
-func (uh *UserHandler) Login(ctx *fiber.Ctx) error {
+func (uh *userHandler) Login(ctx *fiber.Ctx) error {
 	// get incoming req
 	var req dto.UserLoginRequest
 	err := ctx.BodyParser(&req)
@@ -104,8 +90,31 @@ func (uh *UserHandler) Login(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(&res)
 }
 
-func (uh *UserHandler) UserDashboard(ctx *fiber.Ctx) error {
-	return ctx.Status(fiber.StatusOK).JSON(&fiber.Map{
-		"messages": "user dashboard",
+// CheckAuthUser verifies that the authentication middleware is working correctly.
+//
+// This endpoint is intended for testing purposes. If the request reaches this
+// handler, it means the user has passed the authentication middleware and the
+// token is valid.
+//
+// It returns a 200 OK response with a simple JSON message.
+func (uh *userHandler) CheckAuthUser(ctx *fiber.Ctx) error {
+	payload, err := middleware.GetAuthPayload(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(&fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	user, err := uh.srv.GetUserByID(ctx.Context(), payload.UserID)
+	if err != nil {
+		return ctx.Status(fiber.StatusNotFound).JSON(&fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return ctx.Status(fiber.StatusOK).JSON(&dto.UserResponse{
+		UserID:    user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt.Time,
+		UpdatedAt: user.UpdatedAt.Time,
 	})
 }

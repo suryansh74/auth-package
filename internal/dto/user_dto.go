@@ -31,3 +31,11 @@ type UserLoginResponse struct {
 	Email       string      `json:"email"`
 	AccessToken string      `json:"token"`
 }
+
+type UserResponse struct {
+	UserID    pgtype.UUID `json:"user_id"`
+	Name      string      `json:"name"`
+	Email     string      `json:"email"`
+	CreatedAt time.Time   `json:"created_at"`
+	UpdatedAt time.Time   `json:"updated_at"`
+}
