@@ -45,7 +45,7 @@ func (uh *userHandler) Register(ctx *fiber.Ctx) error {
 	}
 
 	// call register func
-	res, err := uh.srv.Register(req)
+	res, err := uh.srv.Register(ctx.Context(), req)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(&fiber.Map{
 			"error": err.Error(),
@@ -73,7 +73,7 @@ func (uh *userHandler) Login(ctx *fiber.Ctx) error {
 	}
 
 	// call login func
-	res, err := uh.srv.Login(req)
+	res, err := uh.srv.Login(ctx.Context(), req)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(&fiber.Map{
 			"error": err.Error(),

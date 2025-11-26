@@ -15,8 +15,8 @@ import (
 
 type AuthService interface {
 	// TODO: add token in return along with response
-	Register(dto.UserRegisterRequest) (*dto.UserRegisterResponse, error)
-	Login(dto.UserLoginRequest) (*dto.UserLoginResponse, error)
+	Register(ctx context.Context, req dto.UserRegisterRequest) (*dto.UserRegisterResponse, error)
+	Login(ctx context.Context, req dto.UserLoginRequest) (*dto.UserLoginResponse, error)
 	GetUserByID(ctx context.Context, userID pgtype.UUID) (*sqlc.User, error)
 }
 
@@ -30,9 +30,9 @@ func NewAuthenticator(auth db.Auth) AuthService {
 	}
 }
 
-func (a *Authenticator) Register(req dto.UserRegisterRequest) (*dto.UserRegisterResponse, error) {
+func (a *Authenticator) Register(ctx context.Context, req dto.UserRegisterRequest) (*dto.UserRegisterResponse, error) {
 	// check if user is already existed
-	exists, _, err := a.userExists(req.Email)
+	exists, _, err := a.userExists(ctx, req.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (a *Authenticator) Register(req dto.UserRegisterRequest) (*dto.UserRegister
 		Email:    req.Email,
 		Password: hashedPassword,
 	}
-	user, err := a.auth.CreateUser(context.Background(), arg)
+	user, err := a.auth.CreateUser(ctx, arg)
 	if err != nil {
 		return nil, customError.UnExpectedError
 	}
@@ -67,9 +67,9 @@ func (a *Authenticator) Register(req dto.UserRegisterRequest) (*dto.UserRegister
 	return &userResponse, nil
 }
 
-func (a *Authenticator) Login(req dto.UserLoginRequest) (*dto.UserLoginResponse, error) {
+func (a *Authenticator) Login(ctx context.Context, req dto.UserLoginRequest) (*dto.UserLoginResponse, error) {
 	// check if user is existed or not
-	exists, user, err := a.userExists(req.Email)
+	exists, user, err := a.userExists(ctx, req.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +89,8 @@ func (a *Authenticator) Login(req dto.UserLoginRequest) (*dto.UserLoginResponse,
 	return &userResponse, nil
 }
 
-func (a *Authenticator) userExists(email string) (bool, *sqlc.User, error) {
-	user, err := a.auth.GetUserByEmail(context.Background(), email)
+func (a *Authenticator) userExists(ctx context.Context, email string) (bool, *sqlc.User, error) {
+	user, err := a.auth.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil, nil

@@ -2,6 +2,7 @@
 package services
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 	"time"
@@ -165,7 +166,7 @@ func TestRegister(t *testing.T) {
 			tc.buildStubs(mockAuth)
 
 			authService := services.NewAuthenticator(mockAuth)
-			resp, err := authService.Register(tc.request)
+			resp, err := authService.Register(context.Background(), tc.request)
 
 			tc.checkResponse(t, resp, err)
 		})
@@ -285,7 +286,7 @@ func TestLogin(t *testing.T) {
 			tc.buildStubs(mockAuth)
 
 			authService := services.NewAuthenticator(mockAuth)
-			resp, err := authService.Login(tc.request)
+			resp, err := authService.Login(context.Background(), tc.request)
 
 			tc.checkResponse(t, resp, err)
 		})
