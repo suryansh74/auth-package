@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/suryansh74/auth-package/internal/db"
 	"github.com/suryansh74/auth-package/internal/dto"
+	"github.com/suryansh74/auth-package/internal/middleware"
 	"github.com/suryansh74/auth-package/internal/services"
 	"github.com/suryansh74/auth-package/internal/token"
 )
@@ -29,11 +30,14 @@ func NewUserHandler(app *fiber.App, db db.Auth, tokenMaker token.Maker) {
 
 func (uh *UserHandler) SetupRoutes() {
 	// public routes
-	uh.app.Get("/check", uh.CheckHealth)
-	uh.app.Post("/register", uh.Register)
-	uh.app.Post("/login", uh.Login)
+	public := uh.app.Group("/")
+	public.Get("/check", uh.CheckHealth)
+	public.Post("/register", uh.Register)
+	public.Post("/login", uh.Login)
 
 	// private routes
+	private := uh.app.Group("/", middleware.AuthMiddleware(uh.tokenMaker))
+	private.Get("/dashboard", uh.UserDashboard)
 }
 
 func (uh *UserHandler) CheckHealth(ctx *fiber.Ctx) error {
@@ -59,7 +63,7 @@ func (uh *UserHandler) Register(ctx *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	accessToken, err := uh.tokenMaker.CreateToken(res.UserID, req.Email, time.Minute*15)
+	accessToken, err := uh.tokenMaker.CreateToken(res.UserID, req.Email, time.Minute)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(&fiber.Map{
 			"error": "unable to create token",
@@ -96,4 +100,10 @@ func (uh *UserHandler) Login(ctx *fiber.Ctx) error {
 	}
 	res.AccessToken = accessToken
 	return ctx.Status(fiber.StatusOK).JSON(&res)
+}
+
+func (uh *UserHandler) UserDashboard(ctx *fiber.Ctx) error {
+	return ctx.Status(fiber.StatusOK).JSON(&fiber.Map{
+		"messages": "user dashboard",
+	})
 }
