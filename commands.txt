@@ -19,3 +19,6 @@ testify:
 
 paseto:
   go get -u github.com/o1egl/paseto
+
+viper:
+  go get github.com/spf13/viper

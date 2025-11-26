@@ -7,17 +7,18 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/suryansh74/auth-package/internal"
-)
-
-const (
-	// Database connection string
-	connString = "postgresql://root:secret@192.168.29.20:5432/authentication?sslmode=disable"
+	"github.com/suryansh74/auth-package/internal/utils"
 )
 
 func main() {
+	config, err := utils.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config:", err)
+	}
+
 	app := fiber.New()
 	// Create connection pool
-	connPool, err := pgxpool.New(context.Background(), connString)
+	connPool, err := pgxpool.New(context.Background(), config.DBSource)
 	if err != nil {
 		log.Fatalf("Unable to create connection pool: %v\n", err)
 	}
@@ -33,7 +34,7 @@ func main() {
 	// for package it only server should start it should have config and database object
 	// config will have secret key for paseto, address and port
 	// and database object of pgx ONLY for now
-	internal.NewAuthServer(app, connPool)
+	internal.NewAuthServer(app, connPool, config)
 
-	app.Listen("localhost:8000")
+	app.Listen(config.ServerAddress)
 }

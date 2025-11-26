@@ -8,6 +8,7 @@ import (
 	"github.com/suryansh74/auth-package/internal/db"
 	"github.com/suryansh74/auth-package/internal/handlers"
 	"github.com/suryansh74/auth-package/internal/token"
+	"github.com/suryansh74/auth-package/internal/utils"
 )
 
 type Server struct {
@@ -17,13 +18,9 @@ type Server struct {
 	tokenMaker  token.Maker
 }
 
-const (
-	symmetricKey = "GhR8pJHc2K3dN6mB4R7fj5G8Wol5hEHu"
-)
-
-// StartServer starts actual api server for auth it takes fiber app
-func NewAuthServer(app *fiber.App, dbObj *pgxpool.Pool) (*Server, error) {
-	tokenMaker, err := token.NewPasetoMaker(symmetricKey)
+// NewAuthServer starts actual api server for auth it takes fiber app
+func NewAuthServer(app *fiber.App, dbObj *pgxpool.Pool, config utils.Config) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w ", err)
 	}
@@ -34,6 +31,6 @@ func NewAuthServer(app *fiber.App, dbObj *pgxpool.Pool) (*Server, error) {
 	}
 
 	// init user handler
-	handlers.NewUserHandler(app, server.auth, server.tokenMaker)
+	handlers.NewUserHandler(app, server.auth, server.tokenMaker, config.AccessTokenDuration)
 	return server, nil
 }

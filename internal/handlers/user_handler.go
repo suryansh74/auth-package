@@ -14,15 +14,17 @@ import (
 type UserHandler struct {
 	app *fiber.App
 	// injecting service in handler
-	srv        services.AuthService
-	tokenMaker token.Maker
+	srv                 services.AuthService
+	tokenMaker          token.Maker
+	accessTokenDuration time.Duration
 }
 
-func NewUserHandler(app *fiber.App, db db.Auth, tokenMaker token.Maker) {
+func NewUserHandler(app *fiber.App, db db.Auth, tokenMaker token.Maker, accessTokenDuration time.Duration) {
 	userHandler := &UserHandler{
-		app:        app,
-		srv:        services.NewAuthenticator(db),
-		tokenMaker: tokenMaker,
+		app:                 app,
+		srv:                 services.NewAuthenticator(db),
+		tokenMaker:          tokenMaker,
+		accessTokenDuration: accessTokenDuration,
 	}
 
 	userHandler.SetupRoutes()

@@ -34,7 +34,7 @@ sqlc:
 db-test:
 	go test -v -cover -count=1 ./internal/db/tests
 
-serivce-test:
+service-test:
 	go test -v -cover -count=1 ./internal/services/tests
 
 # running server  HACK: Remove it after production
