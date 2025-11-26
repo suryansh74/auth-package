@@ -1,6 +1,10 @@
 package dto
 
-import "time"
+import (
+	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
+)
 
 type UserRegisterRequest struct {
 	Name     string `json:"name"`
@@ -14,12 +18,16 @@ type UserLoginRequest struct {
 }
 
 type UserRegisterResponse struct {
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	UserID      pgtype.UUID `json:"user_id"`
+	Name        string      `json:"name"`
+	Email       string      `json:"email"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
+	AccessToken string      `json:"token"`
 }
 
 type UserLoginResponse struct {
-	Email string `json:"email"`
+	UserID      pgtype.UUID `json:"user_id"`
+	Email       string      `json:"email"`
+	AccessToken string      `json:"token"`
 }

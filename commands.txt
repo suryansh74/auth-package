@@ -16,3 +16,6 @@ pgx:
 
 testify:
   go get github.com/stretchr/testify
+
+paseto:
+  go get -u github.com/o1egl/paseto

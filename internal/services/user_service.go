@@ -56,6 +56,7 @@ func (a *Authenticator) Register(req dto.UserRegisterRequest) (*dto.UserRegister
 	}
 
 	userResponse := dto.UserRegisterResponse{
+		UserID:    user.ID,
 		Name:      user.Name,
 		Email:     req.Email,
 		CreatedAt: user.CreatedAt.Time,
@@ -78,8 +79,10 @@ func (a *Authenticator) Login(req dto.UserLoginRequest) (*dto.UserLoginResponse,
 	if err != nil {
 		return nil, errors.New("password not matched")
 	}
+
 	userResponse := dto.UserLoginResponse{
-		Email: req.Email,
+		UserID: user.ID,
+		Email:  req.Email,
 	}
 	return &userResponse, nil
 }
